@@ -1,0 +1,86 @@
+/* Event Card Styles */
+.event-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: #667eea;
+}
+
+.event-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.event-name {
+    margin: 0;
+    color: #333;
+    font-size: 1.4rem;
+    flex: 1;
+}
+
+.event-category {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.event-details {
+    margin-bottom: 1rem;
+}
+
+.event-details p {
+    margin: 0.5rem 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.event-organizer,
+.event-location,
+.event-date {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.event-description {
+    color: #777;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-top: 1rem;
+}
+
+.event-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.seats {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.seats.full {
+    background: #ffebee;
+    color: #c62828;
+}
