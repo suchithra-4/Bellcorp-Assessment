@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { MockEventModel, MockEvent } = require('../config/mockDB');
 
 const eventSchema = new mongoose.Schema({
     name: {
@@ -50,4 +51,19 @@ const eventSchema = new mongoose.Schema({
 
 eventSchema.index({ name: 'text', description: 'text', organizer: 'text' });
 
-module.exports = mongoose.model('Event', eventSchema);
+const MongooseEvent = mongoose.model('Event', eventSchema);
+
+module.exports = new Proxy(MongooseEvent, {
+    get(target, prop) {
+        if (process.env.USE_MOCK_DB === 'true') {
+            return MockEventModel[prop];
+        }
+        return target[prop];
+    },
+    construct(target, args) {
+        if (process.env.USE_MOCK_DB === 'true') {
+            return MockEvent(...args);
+        }
+        return new target(...args);
+    }
+});

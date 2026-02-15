@@ -14,7 +14,41 @@ const registrationRoutes = require('./routes/registrations');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(async () => {
+    // Seed initial data if using mock DB and it's empty
+    if (process.env.USE_MOCK_DB === 'true') {
+        const Event = require('./models/Event');
+        const count = await Event.countDocuments();
+        if (count === 0) {
+            console.log(' Seeding mock database with initial events...');
+            const sampleEvents = [
+                {
+                    name: 'Tech Conference 2026',
+                    organizer: 'Tech Solutions',
+                    location: 'Online',
+                    date: new Date('2026-05-15'),
+                    description: 'A deep dive into the latest technologies including AI, Cloud, and Web Development.',
+                    capacity: 500,
+                    availableSeats: 500,
+                    category: 'Technology',
+                    tags: ['AI', 'Tech', 'Web']
+                },
+                {
+                    name: 'Design Workshop',
+                    organizer: 'Creative Arts',
+                    location: 'New York, NY',
+                    date: new Date('2026-06-10'),
+                    description: 'Learn modern UI/UX design principles and tools in this hands-on workshop.',
+                    capacity: 50,
+                    availableSeats: 50,
+                    category: 'Design',
+                    tags: ['Design', 'UI/UX']
+                }
+            ];
+            await Event.create(sampleEvents);
+        }
+    }
+});
 
 // Middleware
 app.use(cors()); // Enable CORS for all routes

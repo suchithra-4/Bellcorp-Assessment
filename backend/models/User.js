@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { MockUserModel, MockUser } = require('../config/mockDB');
 
 // Define the User schema
 const userSchema = new mongoose.Schema({
@@ -25,5 +26,20 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Create and export the User model
-module.exports = mongoose.model('User', userSchema);
+const MongooseUser = mongoose.model('User', userSchema);
+
+// Export a proxy that switches between Mongoose and Mock depending on state
+module.exports = new Proxy(MongooseUser, {
+    get(target, prop) {
+        if (process.env.USE_MOCK_DB === 'true') {
+            return MockUserModel[prop];
+        }
+        return target[prop];
+    },
+    construct(target, args) {
+        if (process.env.USE_MOCK_DB === 'true') {
+            return MockUser(...args);
+        }
+        return new target(...args);
+    }
+});
