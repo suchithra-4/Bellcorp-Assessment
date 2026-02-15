@@ -15,38 +15,53 @@ const app = express();
 
 // Connect to MongoDB
 connectDB().then(async () => {
-    // Seed initial data if using mock DB and it's empty
-    if (process.env.USE_MOCK_DB === 'true') {
-        const Event = require('./models/Event');
+    // Seed initial data if the database is empty
+    const Event = require('./models/Event');
+    try {
         const count = await Event.countDocuments();
         if (count === 0) {
-            console.log(' Seeding mock database with initial events...');
+            console.log(' Seeding database with initial events...');
+            // Import sample events from seed.js or define a few here
             const sampleEvents = [
                 {
                     name: 'Tech Conference 2026',
-                    organizer: 'Tech Solutions',
-                    location: 'Online',
-                    date: new Date('2026-05-15'),
-                    description: 'A deep dive into the latest technologies including AI, Cloud, and Web Development.',
-                    capacity: 500,
-                    availableSeats: 500,
+                    organizer: 'Tech Community',
+                    location: 'San Francisco, CA',
+                    date: new Date('2026-03-15T09:00:00'),
+                    description: 'Learn about the latest trends in AI, cloud computing, and web development.',
+                    capacity: 200,
+                    availableSeats: 200,
                     category: 'Technology',
-                    tags: ['AI', 'Tech', 'Web']
+                    tags: ['AI', 'Cloud', 'Web']
                 },
                 {
-                    name: 'Design Workshop',
-                    organizer: 'Creative Arts',
+                    name: 'Business Leadership Summit',
+                    organizer: 'Business Leaders Association',
                     location: 'New York, NY',
-                    date: new Date('2026-06-10'),
-                    description: 'Learn modern UI/UX design principles and tools in this hands-on workshop.',
-                    capacity: 50,
-                    availableSeats: 50,
-                    category: 'Design',
-                    tags: ['Design', 'UI/UX']
+                    date: new Date('2026-04-20T10:00:00'),
+                    description: 'Strategic growth and innovation for business leaders.',
+                    capacity: 150,
+                    availableSeats: 150,
+                    category: 'Business',
+                    tags: ['Leadership', 'Strategy']
+                },
+                {
+                    name: 'Health & Wellness Expo',
+                    organizer: 'Wellness Institute',
+                    location: 'Seattle, WA',
+                    date: new Date('2026-03-30T10:00:00'),
+                    description: 'Latest in health, nutrition, and wellness.',
+                    capacity: 250,
+                    availableSeats: 250,
+                    category: 'Health',
+                    tags: ['Wellness', 'Nutrition']
                 }
             ];
             await Event.create(sampleEvents);
+            console.log('✅ Database seeded!');
         }
+    } catch (err) {
+        console.error(' Error checking/seeding database:', err.message);
     }
 });
 
