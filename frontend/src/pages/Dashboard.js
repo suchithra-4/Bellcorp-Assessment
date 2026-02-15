@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import API_URL from '../config/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -18,7 +19,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchMyEvents = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/registrations/my-events', {
+                const response = await axios.get(`${API_URL}/api/registrations/my-events`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -58,7 +59,7 @@ const Dashboard = () => {
         setCancellingId(registrationId);
 
         try {
-            await axios.delete(`http://localhost:5000/api/registrations/${registrationId}`, {
+            await axios.delete(`${API_URL}/api/registrations/${registrationId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

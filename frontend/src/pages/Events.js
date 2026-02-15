@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import EventCard from '../components/EventCard';
 import SearchFilter from '../components/SearchFilter';
+import API_URL from '../config/api';
 import './Events.css';
 
 const Events = () => {
@@ -32,7 +33,7 @@ const Events = () => {
                 ...filterParams
             };
 
-            const response = await axios.get('http://localhost:5000/api/events', { params });
+            const response = await axios.get(`${API_URL}/api/events`, { params });
 
             // If first page, replace events; otherwise, append
             if (pageNum === 1) {

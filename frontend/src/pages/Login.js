@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import API_URL from '../config/api';
 import './Auth.css';
 
 const Login = () => {
@@ -31,7 +32,7 @@ const Login = () => {
 
         try {
             // Send login request to backend
-            const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+            const response = await axios.post(`${API_URL}/api/auth/login`, formData);
 
             // Save token and user data
             login(response.data.token, response.data.user);

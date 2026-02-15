@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import API_URL from '../config/api';
 import './EventDetails.css';
 
 const EventDetails = () => {
@@ -19,7 +20,7 @@ const EventDetails = () => {
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/events/${id}`);
+                const response = await axios.get(`${API_URL}/api/events/${id}`);
                 setEvent(response.data.event);
             } catch (err) {
                 setError('Failed to load event details.');
@@ -57,7 +58,7 @@ const EventDetails = () => {
 
         try {
             const response = await axios.post(
-                'http://localhost:5000/api/registrations',
+                `${API_URL}/api/registrations`,
                 { eventId: id },
                 {
                     headers: {
