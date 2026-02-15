@@ -2,7 +2,6 @@ const Datastore = require('nedb-promises');
 const path = require('path');
 
 // Initialize datastores (in-memory for Render, but could be files)
-// Using files in /tmp for short-term persistence on Render if needed
 const useFiles = process.env.NODE_ENV === 'production';
 const dbPath = (filename) => useFiles ? path.join('/tmp', filename) : null;
 
@@ -12,14 +11,64 @@ const db = {
     registrations: Datastore.create({ filename: dbPath('registrations.db'), autoload: true })
 };
 
-// Simple Mock Model wrapper to mimic Mongoose
+// Helper to mimic Mongoose Query chaining
+class MockQuery {
+    constructor(promise) {
+        this.promise = promise;
+        this._sort = null;
+        this._skip = 0;
+        this._limit = 0;
+    }
+
+    sort(val) { this._sort = val; return this; }
+    skip(val) { this._skip = val; return this; }
+    limit(val) { this._limit = val; return this; }
+
+    async exec() {
+        let results = await this.promise;
+
+        // Basic sorting (Mongoose style: { field: 1/-1 })
+        if (this._sort) {
+            const field = Object.keys(this._sort)[0];
+            const order = this._sort[field];
+            results.sort((a, b) => {
+                if (a[field] < b[field]) return order === 1 ? -1 : 1;
+                if (a[field] > b[field]) return order === 1 ? 1 : -1;
+                return 0;
+            });
+        }
+
+        if (this._skip) results = results.slice(this._skip);
+        if (this._limit) results = results.slice(0, this._limit);
+
+        return results;
+    }
+
+    // Handle being awaited directly
+    then(onFulfilled, onRejected) {
+        return this.exec().then(onFulfilled, onRejected);
+    }
+}
+
 class MockModel {
     constructor(collectionName) {
         this.collection = db[collectionName];
     }
 
-    async find(query = {}) {
-        return await this.collection.find(query);
+    find(query = {}) {
+        // Special case for $text search (NeDB doesn't support $text)
+        if (query.$text) {
+            const search = query.$text.$search;
+            delete query.$text;
+            const regex = new RegExp(search, 'i');
+            query.$or = [{ name: regex }, { description: regex }, { organizer: regex }];
+        }
+        // Handle regex in location
+        if (query.location && typeof query.location === 'object' && query.location.$regex) {
+            query.location = new RegExp(query.location.$regex, 'i');
+        }
+
+        return new MockQuery(this.collection.find(query));
     }
 
     async findOne(query) {
@@ -31,14 +80,12 @@ class MockModel {
     }
 
     async create(data) {
-        // Handle both single object and array
         if (Array.isArray(data)) {
             return await this.collection.insertMany(data);
         }
         return await this.collection.insert(data);
     }
 
-    // Support new Model(data).save()
     wrap(data) {
         const self = this;
         const obj = { ...data };
@@ -55,8 +102,14 @@ class MockModel {
         return obj;
     }
 
-    // For static calls like User.countDocuments()
-    async countDocuments(query) {
+    async countDocuments(query = {}) {
+        // Fix for $text in count too
+        if (query.$text) {
+            const search = query.$text.$search;
+            delete query.$text;
+            const regex = new RegExp(search, 'i');
+            query.$or = [{ name: regex }, { description: regex }, { organizer: regex }];
+        }
         return await this.collection.count(query);
     }
 
@@ -69,7 +122,8 @@ class MockModel {
     }
 
     async updateOne(query, update) {
-        return await this.collection.update(query, { $set: update });
+        const set = update.$set || update;
+        return await this.collection.update(query, { $set: set });
     }
 }
 
