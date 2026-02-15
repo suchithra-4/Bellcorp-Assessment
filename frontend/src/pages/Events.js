@@ -54,6 +54,7 @@ const Events = () => {
     // Load events on component mount
     useEffect(() => {
         fetchEvents(1, searchTerm, filters);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Handle search
