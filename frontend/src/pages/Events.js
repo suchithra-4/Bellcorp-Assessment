@@ -44,7 +44,8 @@ const Events = () => {
 
             setHasMore(response.data.hasMore);
         } catch (err) {
-            setError('Failed to load events. Please try again.');
+            const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to load events. Please try again.';
+            setError(errorMsg);
             console.error('Error fetching events:', err);
         } finally {
             setLoading(false);
