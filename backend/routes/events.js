@@ -50,10 +50,28 @@ router.get('/', async (req, res) => {
         const totalEvents = await Event.countDocuments(query);
 
         // Get events with pagination
-        const events = await Event.find(query)
-            .sort({ date: 1 }) // Sort by date ascending
-            .skip(skip)
-            .limit(limit);
+        let events;
+        try {
+            events = await Event.find(query)
+                .sort({ date: 1 })
+                .skip(skip)
+                .limit(limit);
+        } catch (findError) {
+            console.error('Initial find error (trying fallback):', findError.message);
+            // If it failed due to $text index, try without it using regex
+            if (query.$text) {
+                const searchStr = query.$text.$search;
+                delete query.$text;
+                query.$or = [
+                    { name: { $regex: searchStr, $options: 'i' } },
+                    { description: { $regex: searchStr, $options: 'i' } },
+                    { organizer: { $regex: searchStr, $options: 'i' } }
+                ];
+                events = await Event.find(query).sort({ date: 1 }).skip(skip).limit(limit);
+            } else {
+                throw findError;
+            }
+        }
 
         // Calculate total pages
         const totalPages = Math.ceil(totalEvents / limit);
@@ -67,8 +85,11 @@ router.get('/', async (req, res) => {
             hasMore: page < totalPages
         });
     } catch (error) {
-        console.error('Get events error:', error);
-        res.status(500).json({ message: 'Server error while fetching events' });
+        console.error('Get events error:', error.message);
+        res.status(500).json({
+            message: 'Server error while fetching events',
+            error: error.message // Include error message for debugging
+        });
     }
 });
 
